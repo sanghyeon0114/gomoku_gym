@@ -1,11 +1,7 @@
-from gomoku_gym.envs.gomoku_board import GomokuBoardEnv
-import time
+import gymnasium as gym
+import gomoku_gym
 
-env = GomokuBoardEnv(
-    render_mode="human", # possible ["human", "gomoku_array"]
-    player_count=1, # possible [0, 1, 2]
-    player="black", # "black" or "white" ( only possible. when player_count is 1. )
-)
+env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black")
 
 obs, info = env.reset()
 
@@ -13,10 +9,7 @@ done = False
 step_count = 0
 
 while not done:
-    while True:
-        action = env.action_space.sample()
-        if env.check_place(action):
-            break
+    action = env.action_space.sample()
 
     obs, reward, done, truncated, info = env.step(action)
 

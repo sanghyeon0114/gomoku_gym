@@ -18,6 +18,7 @@ make run
 
 ```python
 import gymnasium as gym
+import gomoku_gym
 
 env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=0)
 obs, info = env.reset()
@@ -32,6 +33,7 @@ while not done:
 
 ```python
 import gymnasium as gym
+import gomoku_gym
 
 env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black")
 obs, info = env.reset()
@@ -46,6 +48,7 @@ while not done:
 
 ```python
 import gymnasium as gym
+import gomoku_gym
 
 env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=2)
 obs, info = env.reset()

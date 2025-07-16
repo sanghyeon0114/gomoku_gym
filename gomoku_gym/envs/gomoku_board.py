@@ -76,13 +76,7 @@ class GomokuBoardEnv(gym.Env):
         mx, my = pos
         return round((mx - Config.MARGIN) / Config.GRID_SIZE), round((my - Config.MARGIN) / Config.GRID_SIZE)
 
-    # private
     def _check_place(self, pos):
-        row, col = pos
-        return (0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == 0)
-
-    # public
-    def check_place(self, pos):
         row, col = pos
         return (0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == 0)
 
@@ -123,10 +117,10 @@ class GomokuBoardEnv(gym.Env):
         if action is None:
             return self._get_obs(), 0, self.done, False, self._get_info()
 
-        row, col = action
-
-        if self.board[row, col] != 0:
+        if not self._check_place(action):
             return self._get_obs(), -1, False, False, self._get_info(valid=False)
+
+        row, col = action
 
         current = self.current_player
         self.board[row, col] = current
