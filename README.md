@@ -21,7 +21,7 @@ import gymnasium as gym
 import gomoku_gym
 gomoku_gym.register_envs()
 
-env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=0)
+env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=0)
 obs, info = env.reset()
 
 done = False
@@ -37,7 +37,7 @@ import gymnasium as gym
 import gomoku_gym
 gomoku_gym.register_envs()
 
-env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black")
+env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black")
 obs, info = env.reset()
 
 done = False
@@ -53,7 +53,7 @@ import gymnasium as gym
 import gomoku_gym
 gomoku_gym.register_envs()
 
-env = gym.make("gomoku_gym/GomokuBoardEnv-v0", render_mode="human", player_count=2)
+env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=2)
 obs, info = env.reset()
 
 done = False
