@@ -3,7 +3,10 @@ from gomoku_gym.config import Config
 class BaseRules(object):
     def __init__(self,):
         pass
-    
+    def is_valid(self, position):
+        x, y = position
+        return (0 <= x < Config.BOARD_SIZE and 0 <= y < Config.BOARD_SIZE)
+
     def is_five_stone(self, current_position, current_player, board) -> bool:
         row, col = current_position
         def count(direction):
