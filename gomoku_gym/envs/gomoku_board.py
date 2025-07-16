@@ -19,9 +19,10 @@ class GomokuBoardEnv(gym.Env):
         self.board_size = Config.BOARD_SIZE
         self.window_size = Config.WINDOW_SIZE
         
-        self.observation_space = spaces.Box(
-            low=0, high=2, shape=(self.board_size, self.board_size), dtype=np.int8
-        )
+        self.observation_space = spaces.Dict({
+            "board": spaces.Box(low=0, high=2, shape=(self.board_size, self.board_size), dtype=np.int8),
+            "current_player": spaces.Discrete(3),
+        })
 
         self.action_space = spaces.MultiDiscrete([self.board_size, self.board_size])
 
