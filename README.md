@@ -10,6 +10,7 @@ To install your new environment, run the following commands:
 make
 pip install -e .
 make run
+```
 
 ## Usage
 
@@ -25,7 +26,7 @@ done = False
 while not done:
     action = env.action_space.sample()
     obs, reward, done, _, info = env.step(action)
-
+```
 
 2. a sample example to run a player vs. random game:
 
@@ -39,7 +40,7 @@ done = False
 while not done:
     action = env.action_space.sample()
     obs, reward, done, _, info = env.step(action)
-
+```
 
 3. a sample example to run a player vs. player game:
 
@@ -53,3 +54,4 @@ done = False
 while not done:
     action = env.action_space.sample()
     obs, reward, done, _, info = env.step(action)
+```
