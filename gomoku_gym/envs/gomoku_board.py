@@ -22,12 +22,14 @@ class GomokuBoardEnv(gym.Env):
         self.observation_space = spaces.Dict({
             "board": spaces.Box(low=0, high=2, shape=(self.board_size, self.board_size), dtype=np.int8),
             "current_player": spaces.Discrete(3),
+            "last_position": spaces.Box(low=-1, high=self.board_size - 1, shape=(2,), dtype=np.int8),
         })
 
         self.action_space = spaces.MultiDiscrete([self.board_size, self.board_size])
 
         self.board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
         self.current_player = 1  # 1: black, 2: white
+        self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
         self.winner = None
     
@@ -49,6 +51,7 @@ class GomokuBoardEnv(gym.Env):
         super().reset(seed=seed)
         self.board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
         self.current_player = 1
+        self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
         self.winner = None
 
@@ -60,7 +63,8 @@ class GomokuBoardEnv(gym.Env):
     def _get_obs(self):
         return {
             "board": self.board.copy(),
-            "current_player": self.current_player
+            "current_player": self.current_player,
+            "last_position": self.last_position
         }
 
     def _get_info(self, placed=False, valid=True):
@@ -123,6 +127,7 @@ class GomokuBoardEnv(gym.Env):
         row, col = action
 
         current = self.current_player
+        self.last_position = np.array([row, col], dtype=np.int8)
         self.board[row, col] = current
 
         if self._check_win(row, col):
@@ -139,6 +144,7 @@ class GomokuBoardEnv(gym.Env):
         obs = {
             "board": self.board.copy(),
             "current_player": current,
+            "last_position": self.last_position
         }
 
         return obs, reward, self.done, False, self._get_info(placed=True)
