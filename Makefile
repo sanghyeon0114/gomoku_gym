@@ -1,6 +1,14 @@
 VENV := .venv
-PYTHON := $(VENV)/Scripts/python
-PIP := $(VENV)/Scripts/pip
+
+ifeq ($(OS), Windows_NT)
+	PYTHON := $(VENV)/Scripts/python
+	PIP := $(VENV)/Scripts/pip
+	ACTIVATE := $(VENV)\\Scripts\\activate.bat
+else
+	PYTHON := $(VENV)/bin/python
+	PIP := $(VENV)/bin/pip
+	ACTIVATE := source $(VENV)/bin/activate
+endif
 
 MAIN_PATH := main
 
@@ -17,9 +25,9 @@ install:
 
 activate:
 ifeq ($(OS), Windows_NT)
-	@cmd /k ".venv\\Scripts\\activate.bat"
+	@cmd /k "$(ACTIVATE)"
 else
-	source .venv/bin/activate
+	@bash -c '$(ACTIVATE) && exec $$SHELL'
 endif
 
 run:
