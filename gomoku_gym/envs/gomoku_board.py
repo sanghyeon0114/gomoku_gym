@@ -5,18 +5,20 @@ import numpy as np
 import sys
 
 from gomoku_gym.config import Config
-from gomoku_gym.rules.renju_rules import RenjuRules
+from gomoku_gym.rules.renju_rules import BaseRules, RenjuRules
+from gomoku_gym.core.cell import Cell
 
 class GomokuBoardEnv(gym.Env):
     metadata = {
         "render_modes": ["human", "gomoku_array"], 
         "player_count": [0, 1, 2],
         "player": ["black", "white"],
+        "rules": ["Basic", "Renju"],
         "render_fps": 10,
     }
     
 
-    def __init__(self, render_mode=None, player_count=0, player="black", is_random=False):
+    def __init__(self, render_mode=None, player_count=0, player="black", is_random=False, rule='Renju'):
         self.board_size = Config.BOARD_SIZE
         self.window_size = Config.WINDOW_SIZE
         
@@ -28,7 +30,7 @@ class GomokuBoardEnv(gym.Env):
 
         self.action_space = spaces.MultiDiscrete([self.board_size, self.board_size])
 
-        self.board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
+        self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
         self.current_player = 1  # 1: black, 2: white
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
@@ -36,23 +38,26 @@ class GomokuBoardEnv(gym.Env):
     
         assert render_mode is None or render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
-        assert player_count is None or player_count in self.metadata["player_count"]
+        assert player_count in self.metadata["player_count"]
         self.player_count = player_count
 
-        
-        assert player is None or player in self.metadata["player"]
+        assert player in self.metadata["player"]
         self.human_player = None
         if self.player_count == 1:
             self.human_player = player
         
-        self.rule = RenjuRules()
+        assert rule in self.metadata["rules"]
+        if rule == "Basic":
+            self.rule = BaseRules()
+        elif rule == "Renju":
+            self.rule = RenjuRules()
 
         self.window = None
         self.clock = None
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
-        self.board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
+        self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
         self.current_player = 1
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
@@ -76,7 +81,7 @@ class GomokuBoardEnv(gym.Env):
             "winner": self.winner,
             "done": self.done,
             "placed": placed,
-            "num_moves": np.count_nonzero(self.board)
+            "num_moves": np.sum((self.board == Cell.BLACK) | (self.board == Cell.WHITE))
         }
 
     def _get_position(self, pos):
@@ -84,8 +89,7 @@ class GomokuBoardEnv(gym.Env):
         return round((mx - Config.MARGIN) / Config.GRID_SIZE), round((my - Config.MARGIN) / Config.GRID_SIZE)
 
     def _is_valid_position(self, pos):
-        row, col = pos
-        return (0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == 0)
+        return self.rule.is_valid(self.board, pos)
 
     def _get_mouse_input(self,):
         for event in pygame.event.get():
@@ -131,7 +135,10 @@ class GomokuBoardEnv(gym.Env):
 
         current = self.current_player
         self.last_position = np.array([row, col], dtype=np.int8)
-        self.board[row, col] = current
+        if current == 1:
+            self.board[row, col] = Cell.BLACK
+        elif current == 2:
+            self.board[row, col] = Cell.WHITE
 
         if self._check_win(action):
             self.done = True
@@ -176,12 +183,12 @@ class GomokuBoardEnv(gym.Env):
         for y in range(self.board_size):
             for x in range(self.board_size):
                 stone = self.board[y][x]
-                if stone != 0:
+                if stone != Cell.EMPTY:
                     center = (
                         Config.MARGIN + x * Config.GRID_SIZE,
                         Config.MARGIN + y * Config.GRID_SIZE,
                     )
-                    img = self.black_stone_img if stone == 1 else self.white_stone_img
+                    img = self.black_stone_img if stone == Cell.BLACK else self.white_stone_img
                     rect = img.get_rect(center=center)
                     self.window.blit(img, rect)
 
@@ -189,7 +196,7 @@ class GomokuBoardEnv(gym.Env):
         self.clock.tick(self.metadata["render_fps"])
 
     def _check_win(self, position):
-        return self.rule.is_five_stone(position, self.current_player, self.board)
+        return self.rule.is_five_stone(self.board, position, self.current_player)
 
     def close(self):
         if self.window is not None:
