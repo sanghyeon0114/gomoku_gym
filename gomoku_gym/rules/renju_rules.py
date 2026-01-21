@@ -64,7 +64,7 @@ class RenjuRules(BaseRules):
         x, y = position
 
         tmp = board[x][y]
-        board[x][y] = Cell.BLACK
+        board[x][y] = player
 
         stone_count = 1
 
@@ -74,7 +74,7 @@ class RenjuRules(BaseRules):
             cy += dy
             if not (0 <= cx < Config.BOARD_SIZE and 0 <= cy < Config.BOARD_SIZE):
                 break
-            if board[cx][cy] == Cell.BLACK:
+            if board[cx][cy] == player:
                 stone_count += 1
             else:
                 break
@@ -85,7 +85,7 @@ class RenjuRules(BaseRules):
             cy -= dy
             if not (0 <= cx < Config.BOARD_SIZE and 0 <= cy < Config.BOARD_SIZE):
                 break
-            if board[cx][cy] == Cell.BLACK:
+            if board[cx][cy] == player:
                 stone_count += 1
             else:
                 break
