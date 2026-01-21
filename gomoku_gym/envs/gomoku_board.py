@@ -5,6 +5,7 @@ import numpy as np
 import sys
 
 from gomoku_gym.config import Config
+from gomoku_gym.rules.renju_rules import RenjuRules
 
 class GomokuBoardEnv(gym.Env):
     metadata = {
@@ -43,6 +44,8 @@ class GomokuBoardEnv(gym.Env):
         self.human_player = None
         if self.player_count == 1:
             self.human_player = player
+        
+        self.rule = RenjuRules()
 
         self.window = None
         self.clock = None
@@ -80,7 +83,7 @@ class GomokuBoardEnv(gym.Env):
         mx, my = pos
         return round((mx - Config.MARGIN) / Config.GRID_SIZE), round((my - Config.MARGIN) / Config.GRID_SIZE)
 
-    def _check_place(self, pos):
+    def _is_valid_position(self, pos):
         row, col = pos
         return (0 <= row < self.board_size and 0 <= col < self.board_size and self.board[row][col] == 0)
 
@@ -91,7 +94,7 @@ class GomokuBoardEnv(gym.Env):
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN :
                 col, row = self._get_position(pygame.mouse.get_pos())
-                if self._check_place((row, col)):
+                if self._is_valid_position((row, col)):
                     return (row, col)
         return None
 
@@ -121,7 +124,7 @@ class GomokuBoardEnv(gym.Env):
         if action is None:
             return self._get_obs(), 0, self.done, False, self._get_info()
 
-        if not self._check_place(action):
+        if not self._is_valid_position(action):
             return self._get_obs(), -1, False, False, self._get_info(valid=False)
 
         row, col = action
@@ -130,7 +133,7 @@ class GomokuBoardEnv(gym.Env):
         self.last_position = np.array([row, col], dtype=np.int8)
         self.board[row, col] = current
 
-        if self._check_win(row, col):
+        if self._check_win(action):
             self.done = True
             self.winner = self.current_player
             reward = 1
@@ -185,23 +188,8 @@ class GomokuBoardEnv(gym.Env):
         pygame.display.update()
         self.clock.tick(self.metadata["render_fps"])
 
-    def _check_win(self, row, col):
-        def count(direction):
-            dr, dc = direction
-            r, c = row + dr, col + dc
-            count = 0
-            while 0 <= r < self.board_size and 0 <= c < self.board_size and self.board[r, c] == self.current_player:
-                count += 1
-                r += dr
-                c += dc
-            return count
-
-        directions = [(-1, 0), (0, -1), (-1, -1), (-1, 1)]
-        for dr, dc in directions:
-            total = 1 + count((dr, dc)) + count((-dr, -dc))
-            if total >= 5:
-                return True
-        return False
+    def _check_win(self, position):
+        return self.rule.is_five_stone(position, self.current_player, self.board)
 
     def close(self):
         if self.window is not None:

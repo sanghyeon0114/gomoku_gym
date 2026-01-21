@@ -2,6 +2,8 @@
 
 Gomoku-Gym is a custom reinforcement learning environment for playing the classic game Gomoku, built using [Gymnasium](https://github.com/Farama-Foundation/Gymnasium).
 
+![Gomoku Board](demo/gomoku_demo.png)
+
 ## Installation
 
 To install your new environment, run the following commands:
