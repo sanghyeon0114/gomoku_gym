@@ -13,12 +13,12 @@ class GomokuBoardEnv(gym.Env):
         "render_modes": ["human", "gomoku_array"], 
         "player_count": [0, 1, 2],
         "player": ["black", "white"],
-        "rules": ["Basic", "Renju"],
+        "rules": ["basic", "renju"],
         "render_fps": 10,
     }
     
 
-    def __init__(self, render_mode=None, player_count=0, player="black", is_random=False, rule='Renju'):
+    def __init__(self, render_mode=None, player_count=0, player="black", is_random=False, rule='renju'):
         self.board_size = Config.BOARD_SIZE
         self.window_size = Config.WINDOW_SIZE
         
@@ -47,9 +47,9 @@ class GomokuBoardEnv(gym.Env):
             self.human_player = player
         
         assert rule in self.metadata["rules"]
-        if rule == "Basic":
+        if rule == "basic":
             self.rule = BaseRules()
-        elif rule == "Renju":
+        elif rule == "renju":
             self.rule = RenjuRules()
 
         self.window = None
@@ -196,7 +196,7 @@ class GomokuBoardEnv(gym.Env):
         self.clock.tick(self.metadata["render_fps"])
 
     def _check_win(self, position):
-        return self.rule.is_five_stone(self.board, position, self.current_player)
+        return self.rule.is_five(self.board, position, self.current_player)
 
     def close(self):
         if self.window is not None:
