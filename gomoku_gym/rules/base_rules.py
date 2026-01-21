@@ -9,7 +9,7 @@ class BaseRules(object):
         x, y = position
         return (0 <= x < Config.BOARD_SIZE and 0 <= y < Config.BOARD_SIZE)
 
-    def is_valid(self, board, position):
+    def is_valid(self, board, position, player):
         x, y = position
         if not self.is_in_position(position):
             return False
@@ -25,7 +25,7 @@ class BaseRules(object):
         x, y = position
         return board[x][y] == Cell.BLACK
     
-    def is_whilte(self, board, position):
+    def is_white(self, board, position):
         x, y = position
         return board[x][y] == Cell.WHITE
 

@@ -6,4 +6,5 @@ class Cell(IntEnum):
     WHITE = 2   # White Stone
     THREE = 3   # 33 (Renju, Black only)
     FOUR = 4    # 44 (Renju, Black only)
-    SIX = 6     # Overline (Renju, Black only)
+    FIVE = 5    # 5
+    SIX_OVER = 6     # Overline (Renju, Black only)

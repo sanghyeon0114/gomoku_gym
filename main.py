@@ -2,7 +2,7 @@ import gymnasium as gym
 import gomoku_gym
 gomoku_gym.register_envs()
 
-env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black", rule="renju")
+env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=2, player="black", rule="renju")
 
 obs, info = env.reset()
 

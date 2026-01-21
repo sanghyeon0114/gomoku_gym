@@ -31,7 +31,7 @@ class GomokuBoardEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete([self.board_size, self.board_size])
 
         self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
-        self.current_player = 1  # 1: black, 2: white
+        self.current_player = Cell.BLACK
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
         self.winner = None
@@ -58,7 +58,7 @@ class GomokuBoardEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
-        self.current_player = 1
+        self.current_player = Cell.BLACK
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
         self.winner = None
@@ -89,7 +89,7 @@ class GomokuBoardEnv(gym.Env):
         return round((mx - Config.MARGIN) / Config.GRID_SIZE), round((my - Config.MARGIN) / Config.GRID_SIZE)
 
     def _is_valid_position(self, pos):
-        return self.rule.is_valid(self.board, pos)
+        return self.rule.is_valid(self.board, pos, self.current_player)
 
     def _get_mouse_input(self,):
         for event in pygame.event.get():
@@ -103,7 +103,7 @@ class GomokuBoardEnv(gym.Env):
         return None
 
     def _handle_single_player(self, action):
-        if (self.current_player == 1 and self.human_player == "black") or (self.current_player == 2 and self.human_player == "white"):
+        if (self.current_player == Cell.BLACK and self.human_player == "black") or (self.current_player == Cell.WHITE and self.human_player == "white"):
             return self._get_mouse_input()
         else:
             return action
@@ -146,7 +146,7 @@ class GomokuBoardEnv(gym.Env):
             reward = 1
         else:
             reward = 0
-            self.current_player = 2 if self.current_player == 1 else 1
+            self.current_player = Cell.WHITE if self.current_player == Cell.BLACK else Cell.BLACK
 
         if self.render_mode == "human":
             self._render_frame()
@@ -171,9 +171,16 @@ class GomokuBoardEnv(gym.Env):
 
             self.black_stone_img = pygame.image.load(Config.BLACK_IMAGE).convert_alpha()
             self.white_stone_img = pygame.image.load(Config.WHITE_IMAGE).convert_alpha()
+            self.forbidden_three_img = pygame.image.load(Config.FORBIDDEN_THREE_IMAGE).convert_alpha()
+            self.forbidden_four_img = pygame.image.load(Config.FORBIDDEN_FOUR_IMAGE).convert_alpha()
+            self.forbidden_six_over_img = pygame.image.load(Config.FORBIDDEN_SIX_OVER_IMAGE).convert_alpha()
 
             self.black_stone_img = pygame.transform.scale(self.black_stone_img, (Config.STONE_SIZE, Config.STONE_SIZE))
             self.white_stone_img = pygame.transform.scale(self.white_stone_img, (Config.STONE_SIZE, Config.STONE_SIZE))
+
+            self.forbidden_three_img = pygame.transform.scale(self.forbidden_three_img, (Config.STONE_SIZE, Config.STONE_SIZE))
+            self.forbidden_four_img = pygame.transform.scale(self.forbidden_four_img, (Config.STONE_SIZE, Config.STONE_SIZE))
+            self.forbidden_six_over_img = pygame.transform.scale(self.forbidden_six_over_img, (Config.STONE_SIZE, Config.STONE_SIZE))
 
         if self.clock is None and self.render_mode == "human":
             self.clock = pygame.time.Clock()
@@ -189,6 +196,33 @@ class GomokuBoardEnv(gym.Env):
                         Config.MARGIN + y * Config.GRID_SIZE,
                     )
                     img = self.black_stone_img if stone == Cell.BLACK else self.white_stone_img
+                    rect = img.get_rect(center=center)
+                    self.window.blit(img, rect)
+
+        if isinstance(self.rule, RenjuRules) and self.current_player == Cell.BLACK:
+            for y in range(self.board_size):
+                for x in range(self.board_size):
+                    if self.board[y][x] != Cell.EMPTY:
+                        continue
+
+                    forbidden = self.rule.checkForbiddenMove(self.board, (y, x), self.current_player)
+
+                    if forbidden is Cell.EMPTY:
+                        continue
+
+                    center = (
+                        Config.MARGIN + x * Config.GRID_SIZE,
+                        Config.MARGIN + y * Config.GRID_SIZE,
+                    )
+
+                    if forbidden == Cell.THREE:
+                        img = self.forbidden_three_img
+                    elif forbidden == Cell.FOUR:
+                        img = self.forbidden_four_img
+                    elif forbidden == Cell.SIX_OVER:
+                        img = self.forbidden_six_over_img
+                    else:
+                        continue
                     rect = img.get_rect(center=center)
                     self.window.blit(img, rect)
 

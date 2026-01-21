@@ -15,3 +15,6 @@ class Config:
     BOARD_IMAGE = "gomoku_gym/images/board/board_background.png"
     BLACK_IMAGE = "gomoku_gym/images/stones/black_stone.png"
     WHITE_IMAGE = "gomoku_gym/images/stones/white_stone.png"
+    FORBIDDEN_THREE_IMAGE = "gomoku_gym/images/rules/forbidden_three.png"
+    FORBIDDEN_FOUR_IMAGE = "gomoku_gym/images/rules/forbidden_four.png"
+    FORBIDDEN_SIX_OVER_IMAGE = "gomoku_gym/images/rules/forbidden_six_over.png"
