@@ -18,7 +18,6 @@ class AlphaZeroAgent:
         row, col = valid_positions[random_idx]
 
         return (int(row), int(col))
-        return action_index
 
     def simulate(self, state):
         pass
