@@ -1,11 +1,15 @@
 import gymnasium as gym
-import gomoku_gym
-gomoku_gym.register_envs()
+from gomoku_gym.core.cell import Cell
+from agents.random import RandomAgent
 
 env = gym.make("GomokuBoardEnv-v0", render_mode="human", player_count=1, player="black")
-obs, info = env.reset()
 
+agent = RandomAgent(Cell.WHITE)
+
+obs, info = env.reset()
 done = False
-while not done:
-    action = env.action_space.sample()
-    obs, reward, done, _, info = env.step(action)
+truncated = False
+
+while not (done or truncated):
+    action = agent.act(obs)
+    obs, reward, done, truncated, info = env.step(action)

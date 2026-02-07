@@ -183,6 +183,10 @@ class GomokuBoardEnv(gym.Env):
 
         return obs, reward, self.done, False, self._get_info(placed=True)
 
+    def render(self):
+        if self.render_mode == "human":
+            return self._render_frame()
+
     def _render_frame(self):
         if self.window is None and self.render_mode == "human":
             pygame.init()
