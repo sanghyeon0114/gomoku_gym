@@ -24,6 +24,7 @@ class GomokuBoardEnv(gym.Env):
         
         self.observation_space = spaces.Dict({
             "board": spaces.Box(low=0, high=2, shape=(self.board_size, self.board_size), dtype=np.int8),
+            "forbidden": spaces.Box(low=0, high=2, shape=(self.board_size, self.board_size), dtype=np.int8),
             "current_player": spaces.Discrete(3),
             "last_position": spaces.Box(low=-1, high=self.board_size - 1, shape=(2,), dtype=np.int8),
         })
@@ -31,6 +32,7 @@ class GomokuBoardEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete([self.board_size, self.board_size])
 
         self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
+        self.forbidden_board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
         self.current_player = Cell.BLACK
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
@@ -58,6 +60,7 @@ class GomokuBoardEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
+        self.forbidden_board = np.full((self.board_size, self.board_size), Cell.EMPTY, dtype=np.int8)
         self.current_player = Cell.BLACK
         self.last_position = np.array([-1, -1], dtype=np.int8)
         self.done = False
@@ -71,6 +74,7 @@ class GomokuBoardEnv(gym.Env):
     def _get_obs(self):
         return {
             "board": self.board.copy(),
+            "forbidden": self.forbidden_board.copy(),
             "current_player": self.current_player,
             "last_position": self.last_position
         }
@@ -90,6 +94,24 @@ class GomokuBoardEnv(gym.Env):
 
     def _is_valid_position(self, pos):
         return self.rule.is_valid(self.board, pos, self.current_player)
+
+    def _update_forbidden_board(self, pos):
+        dirs = [
+            (-1, -1), (1, 1),
+            (-1, 0),  (1, 0),
+            (0, -1),  (0, 1),
+        ]
+
+        for dx, dy in dirs:
+            x, y = pos
+            while self.rule.is_valid_position((x, y)):
+                if self.forbidden_board[x][y] == Cell.EMPTY:
+                    self.forbidden_board[x][y] = self.rule.checkForbiddenMove(
+                        self.board, (x, y), self.current_player
+                    )
+                x += dx
+                y += dy
+
 
     def _get_mouse_input(self,):
         for event in pygame.event.get():
@@ -136,9 +158,10 @@ class GomokuBoardEnv(gym.Env):
         current = self.current_player
         self.last_position = np.array([row, col], dtype=np.int8)
         if current == 1:
-            self.board[row, col] = Cell.BLACK
+            self.board[row, col] = self.forbidden_board[row, col] =  Cell.BLACK
+            self._update_forbidden_board((row, col))
         elif current == 2:
-            self.board[row, col] = Cell.WHITE
+            self.board[row, col] = self.forbidden_board[row, col] =  Cell.WHITE
 
         if self._check_win(action):
             self.done = True
@@ -153,6 +176,7 @@ class GomokuBoardEnv(gym.Env):
 
         obs = {
             "board": self.board.copy(),
+            "forbidden": self.forbidden_board.copy(),
             "current_player": current,
             "last_position": self.last_position
         }
@@ -205,7 +229,7 @@ class GomokuBoardEnv(gym.Env):
                     if self.board[y][x] != Cell.EMPTY:
                         continue
 
-                    forbidden = self.rule.checkForbiddenMove(self.board, (y, x), self.current_player)
+                    forbidden = self.forbidden_board[y][x]
 
                     if forbidden is Cell.EMPTY:
                         continue
